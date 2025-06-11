@@ -10,7 +10,7 @@ const TeleprompterApp = () => {
   const [currentDoc, setCurrentDoc] = useState(null);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [speed, setSpeed] = useState(200); // WPM
+  const [speed, setSpeed] = useState(100); // WPM
   const [showDocList, setShowDocList] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [editingDoc, setEditingDoc] = useState(null);
@@ -23,8 +23,6 @@ const TeleprompterApp = () => {
 
   const words = currentDoc ? currentDoc.content.split(/\s+/).filter(word => word.length > 0) : [];
 
-  console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
-  console.log('Supabase Key:', import.meta.env.VITE_SUPABASE_ANON_KEY);
   useEffect(() => {
     const fetchDocuments = async () => {
       setIsLoading(true);
@@ -192,12 +190,12 @@ const TeleprompterApp = () => {
     return words.map((word, index) => (
       <span
         key={index}
-        className={`inline-block mx-1 my-1 px-2 py-1 rounded transition-all duration-200 ${
+        className={`teleprompter-word ${
           index === currentWordIndex
-            ? 'current-word bg-blue-500 text-white shadow-lg scale-110'
+            ? 'current-word'
             : index < currentWordIndex
-            ? 'bg-gray-200 text-gray-600'
-            : 'text-gray-800'
+            ? 'past-word'
+            : 'future-word'
         }`}
       >
         {word}
@@ -207,8 +205,8 @@ const TeleprompterApp = () => {
 
   if (isLoading && showDocList) { // Initial loading screen for document list
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-xl text-gray-700">Loading documents...</p>
+      <div className="loading-screen">
+        <p className="loading-text">Loading documents...</p>
       </div>
     );
   }
@@ -216,53 +214,46 @@ const TeleprompterApp = () => {
   // Editor View (for new or existing documents)
   if (editingDoc || (!currentDoc && !showDocList && !isLoading)) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <button
-              onClick={handleBackFromEditor}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
-            >
+      <div className="editor-view">
+        <div className="editor-container">
+          <div className="editor-header">
+            <button onClick={handleBackFromEditor} className="back-button">
               <ArrowLeft size={20} />
               Back
             </button>
-            <h1 className="text-xl font-bold text-gray-800">
+            <h1 className="editor-title">
               {editingDoc ? 'Edit Document' : 'New Document'}
             </h1>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Title
-              </label>
+          <div className="editor-form">
+            <div className="form-group">
+              <label className="form-label">Title</label>
               <input
                 type="text"
                 value={newDocTitle}
                 onChange={(e) => setNewDocTitle(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="form-input"
                 placeholder="Enter document title..."
               />
             </div>
 
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Content
-              </label>
+            <div className="form-group">
+              <label className="form-label">Content</label>
               <textarea
                 value={newDocContent}
                 onChange={(e) => setNewDocContent(e.target.value)}
                 rows={10}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="form-textarea"
                 placeholder="Enter your speech or script content..."
               />
             </div>
 
-            <div className="flex gap-3">
+            <div className="form-actions">
               <button
                 onClick={editingDoc ? updateDocument : createDocument}
                 disabled={!newDocTitle.trim() || !newDocContent.trim()}
-                className="flex-1 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                className="btn btn-primary"
               >
                 {editingDoc ? 'Update' : 'Create'} Document
               </button>
@@ -276,55 +267,41 @@ const TeleprompterApp = () => {
   // Document List View
   if (showDocList) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">My Documents</h1>
-            <button
-              onClick={handleAddNewDocument}
-              className="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition-colors"
-            >
+      <div className="document-list-view">
+        <div className="document-list-container">
+          <div className="document-list-header">
+            <h1 className="page-title">My Documents</h1>
+            <button onClick={handleAddNewDocument} className="add-button">
               <Plus size={20} />
               <span className="sr-only">Add New Document</span>
             </button>
           </div>
 
-          <div className="space-y-3">
+          <div className="document-list">
             {documents.map((doc) => (
-              <div key={doc.id} className="bg-white rounded-lg shadow-md p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 cursor-pointer" onClick={() => selectDocument(doc)}>
-                    <h3 className="font-semibold text-gray-800">{doc.title}</h3>
-                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                      {doc.content.substring(0, 100)}{doc.content.length > 100 ? '...' : ''}
-                    </p>
-                  </div>
-                  <div className="flex gap-2 ml-4">
-                    <button
-                      onClick={() => startEditing(doc)}
-                      className="p-2 text-gray-500 hover:text-blue-500 transition-colors"
-                    >
-                      <Edit3 size={16} />
-                    </button>
-                    <button
-                      onClick={() => deleteDocument(doc.id)}
-                      className="p-2 text-gray-500 hover:text-red-500 transition-colors"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
+              <div key={doc.id} className="document-card">
+                <div className="document-content" onClick={() => selectDocument(doc)}>
+                  <h3 className="document-title">{doc.title}</h3>
+                  <p className="document-preview">
+                    {doc.content.substring(0, 100)}{doc.content.length > 100 ? '...' : ''}
+                  </p>
+                </div>
+                <div className="document-actions">
+                  <button onClick={() => startEditing(doc)} className="action-button edit-button">
+                    <Edit3 size={16} />
+                  </button>
+                  <button onClick={() => deleteDocument(doc.id)} className="action-button delete-button">
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               </div>
             ))}
           </div>
 
           {!isLoading && documents.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-gray-500 mb-4">No documents yet. Create your first one!</p>
-              <button
-                onClick={handleAddNewDocument}
-                className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors"
-              >
+            <div className="empty-state">
+              <p className="empty-message">No documents yet. Create your first one!</p>
+              <button onClick={handleAddNewDocument} className="btn btn-primary">
                 Create Your First Document
               </button>
             </div>
@@ -337,23 +314,20 @@ const TeleprompterApp = () => {
   // Settings View
   if (showSettings) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4">
-        <div className="max-w-xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <button
-              onClick={() => setShowSettings(false)}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
-            >
+      <div className="settings-view">
+        <div className="settings-container">
+          <div className="settings-header">
+            <button onClick={() => setShowSettings(false)} className="back-button">
               <ArrowLeft size={20} />
               Back
             </button>
-            <h1 className="text-xl font-bold text-gray-800">Settings</h1>
+            <h1 className="settings-title">Settings</h1>
             <div></div> {/* Spacer for alignment */}
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="settings-form">
+            <div className="settings-group">
+              <label className="settings-label">
                 Reading Speed: {speed} WPM
               </label>
               <input
@@ -362,9 +336,9 @@ const TeleprompterApp = () => {
                 max="300"
                 value={speed}
                 onChange={(e) => setSpeed(parseInt(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                className="speed-slider"
               />
-              <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <div className="slider-labels">
                 <span>Slow</span>
                 <span>Fast</span>
               </div>
@@ -382,51 +356,44 @@ const TeleprompterApp = () => {
     // but as a safeguard, redirect to document list.
     setShowDocList(true);
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-xl text-gray-700">No document selected. Redirecting...</p>
+      <div className="loading-screen">
+        <p className="loading-text">No document selected. Redirecting...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="teleprompter-view">
       {/* Header */}
-      <div className="bg-gray-800 text-white p-4 flex items-center justify-between">
+      <div className="teleprompter-header">
         <button
           onClick={() => { setCurrentDoc(null); setIsPlaying(false); setShowDocList(true);}}
-          className="flex items-center gap-2 text-gray-300 hover:text-white"
+          className="header-back-button"
         >
           <ArrowLeft size={20} />
           Documents
         </button>
-        <h1 className="font-semibold truncate mx-4 flex-1 text-center">{currentDoc?.title || "Untitled Document"}</h1>
-        <button
-          onClick={() => setShowSettings(true)}
-          className="text-gray-300 hover:text-white"
-        >
+        <h1 className="header-title">{currentDoc?.title || "Untitled Document"}</h1>
+        <button onClick={() => setShowSettings(true)} className="header-settings-button">
           <Settings size={20} />
         </button>
       </div>
 
       {/* Text Display */}
-      <div 
-        ref={scrollRef}
-        className="flex-1 p-6 overflow-y-auto"
-        style={{ fontSize: '18px', lineHeight: '1.6' }}
-      >
-        <div className="max-w-4xl mx-auto">
-          {words.length > 0 ? renderWords() : <p className="text-gray-500 text-center py-10">This document is empty.</p>}
+      <div ref={scrollRef} className="teleprompter-text-container">
+        <div className="teleprompter-text">
+          {words.length > 0 ? renderWords() : <p className="empty-document">This document is empty.</p>}
         </div>
       </div>
 
       {/* Progress Bar */}
       {words.length > 0 && (
-        <div className="px-4 py-2 bg-gray-50">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+        <div className="progress-container">
+          <div className="progress-info">
             <span>{Math.min(currentWordIndex + 1, words.length)}</span>
-            <div className="flex-1 bg-gray-200 rounded-full h-2">
+            <div className="progress-bar-container">
               <div 
-                className="bg-blue-500 h-2 rounded-full transition-all duration-200"
+                className="progress-bar"
                 style={{ width: `${words.length > 0 ? ((Math.min(currentWordIndex + 1, words.length)) / words.length) * 100 : 0}%` }}
               />
             </div>
@@ -435,13 +402,13 @@ const TeleprompterApp = () => {
         </div>
       )}
 
-      {/* Controls */}
-      <div className="bg-gray-800 p-4">
-        <div className="flex items-center justify-center gap-4">
+      {/* Controls - Now Floating */}
+      <div className="floating-controls">
+        <div className="controls-inner">
           <button
             onClick={reset}
             disabled={words.length === 0}
-            className="bg-gray-600 text-white p-3 rounded-full hover:bg-gray-500 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="control-button reset-button"
           >
             <RotateCcw size={20} />
           </button>
@@ -449,7 +416,7 @@ const TeleprompterApp = () => {
           <button
             onClick={rewind}
             disabled={words.length === 0}
-            className="bg-gray-600 text-white p-3 rounded-full hover:bg-gray-500 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="control-button rewind-button"
           >
             <FastForward size={20} className="rotate-180" />
           </button>
@@ -457,7 +424,7 @@ const TeleprompterApp = () => {
           <button
             onClick={togglePlayPause}
             disabled={words.length === 0}
-            className="bg-blue-500 text-white p-4 rounded-full hover:bg-blue-400 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed"
+            className="control-button play-button"
           >
             {isPlaying ? <Pause size={24} /> : <Play size={24} />}
           </button>
@@ -465,12 +432,12 @@ const TeleprompterApp = () => {
           <button
             onClick={fastForward}
             disabled={words.length === 0}
-            className="bg-gray-600 text-white p-3 rounded-full hover:bg-gray-500 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="control-button forward-button"
           >
             <FastForward size={20} />
           </button>
           
-          <div className="text-white text-sm">
+          <div className="speed-indicator">
             {speed} WPM
           </div>
         </div>
