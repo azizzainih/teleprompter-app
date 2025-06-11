@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, RotateCcw, FastForward, Plus, Edit3, Trash2, ArrowLeft, Settings } from 'lucide-react';
-import { supabase } from '../supabaseClient'; // Ensure you have set up Supabase client 
+import { supabase } from '../supabaseClient'; // Ensure you have set up Supabase client
 import './App.css';
 
 
 const TeleprompterApp = () => {
   const [documents, setDocuments] = useState([]); // Will be fetched from Supabase
-  
+
   const [currentDoc, setCurrentDoc] = useState(null);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -17,7 +17,7 @@ const TeleprompterApp = () => {
   const [newDocTitle, setNewDocTitle] = useState('');
   const [newDocContent, setNewDocContent] = useState('');
   const [isLoading, setIsLoading] = useState(true); // For loading documents
-  
+
   const intervalRef = useRef(null);
   const scrollRef = useRef(null);
 
@@ -65,9 +65,9 @@ const TeleprompterApp = () => {
     if (scrollRef.current) {
       const currentWordElement = scrollRef.current.querySelector('.current-word');
       if (currentWordElement) {
-        currentWordElement.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center' 
+        currentWordElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
         });
       }
     }
@@ -123,7 +123,7 @@ const TeleprompterApp = () => {
         // Handle error
       } else if (data && data.length > 0) {
         const updatedDoc = data[0];
-        setDocuments(documents.map(doc => 
+        setDocuments(documents.map(doc =>
           doc.id === updatedDoc.id ? updatedDoc : doc
         ));
         if (currentDoc && currentDoc.id === updatedDoc.id) {
@@ -364,21 +364,6 @@ const TeleprompterApp = () => {
 
   return (
     <div className="teleprompter-view">
-      {/* Header */}
-      <div className="teleprompter-header">
-        <button
-          onClick={() => { setCurrentDoc(null); setIsPlaying(false); setShowDocList(true);}}
-          className="header-back-button"
-        >
-          <ArrowLeft size={20} />
-          Documents
-        </button>
-        <h1 className="header-title">{currentDoc?.title || "Untitled Document"}</h1>
-        <button onClick={() => setShowSettings(true)} className="header-settings-button">
-          <Settings size={20} />
-        </button>
-      </div>
-
       {/* Text Display */}
       <div ref={scrollRef} className="teleprompter-text-container">
         <div className="teleprompter-text">
@@ -392,7 +377,7 @@ const TeleprompterApp = () => {
           <div className="progress-info">
             <span>{Math.min(currentWordIndex + 1, words.length)}</span>
             <div className="progress-bar-container">
-              <div 
+              <div
                 className="progress-bar"
                 style={{ width: `${words.length > 0 ? ((Math.min(currentWordIndex + 1, words.length)) / words.length) * 100 : 0}%` }}
               />
@@ -402,7 +387,29 @@ const TeleprompterApp = () => {
         </div>
       )}
 
-      {/* Controls - Now Floating */}
+      {/* --- Floating UI Elements --- */}
+
+      {/* Left Controls (Back/Settings) */}
+      <div className="floating-controls-left">
+        <div className="controls-inner">
+          <button
+            onClick={() => { setCurrentDoc(null); setIsPlaying(false); setShowDocList(true); }}
+            className="control-button"
+            aria-label="Back to Documents"
+          >
+            <ArrowLeft size={22} />
+          </button>
+          <button
+            onClick={() => setShowSettings(true)}
+            className="control-button"
+            aria-label="Open Settings"
+          >
+            <Settings size={22} />
+          </button>
+        </div>
+      </div>
+
+      {/* Right Controls (Playback) */}
       <div className="floating-controls">
         <div className="controls-inner">
           <button
@@ -412,7 +419,7 @@ const TeleprompterApp = () => {
           >
             <RotateCcw size={20} />
           </button>
-          
+
           <button
             onClick={rewind}
             disabled={words.length === 0}
@@ -420,7 +427,7 @@ const TeleprompterApp = () => {
           >
             <FastForward size={20} className="rotate-180" />
           </button>
-          
+
           <button
             onClick={togglePlayPause}
             disabled={words.length === 0}
@@ -428,7 +435,7 @@ const TeleprompterApp = () => {
           >
             {isPlaying ? <Pause size={24} /> : <Play size={24} />}
           </button>
-          
+
           <button
             onClick={fastForward}
             disabled={words.length === 0}
@@ -436,7 +443,7 @@ const TeleprompterApp = () => {
           >
             <FastForward size={20} />
           </button>
-          
+
           <div className="speed-indicator">
             {speed} WPM
           </div>

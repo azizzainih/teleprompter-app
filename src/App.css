@@ -267,45 +267,6 @@ body {
   position: relative;
 }
 
-.teleprompter-header {
-  position: fixed;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 20px;
-  background-color: var(--surface-color);
-  flex-shrink: 0;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.header-back-button, .header-settings-button {
-  background: none;
-  border: none;
-  color: var(--text-color);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 1rem;
-  padding: 8px;
-  border-radius: var(--border-radius);
-  transition: background-color 0.2s ease;
-}
-
-.header-back-button:hover, .header-settings-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.header-title {
-  font-size: 1.2rem;
-  text-align: center;
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: 1;
-  padding: 0 20px;
-}
-
 .teleprompter-text-container {
   flex-grow: 1;
   overflow-y: auto;
@@ -396,7 +357,7 @@ body {
   transition: width 0.1s linear;
 }
 
-/* --- Floating Controls --- */
+/* --- Floating Controls (Right) --- */
 .floating-controls {
   position: fixed;
   right: 20px; /* Adjust spacing from the right edge */
@@ -405,7 +366,19 @@ body {
   background-color: transparent;
   padding: 10px;
   border-radius: 8px; /* Optional: for rounded corners */
-  z-index: 1001; /* Ensure it's above the header if they overlap */
+  z-index: 1001; /* Ensure it's above other elements */
+}
+
+/* --- Floating Controls (Left) --- */
+.floating-controls-left {
+  position: fixed;
+  left: 20px; /* Position on the left */
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: transparent;
+  padding: 10px;
+  border-radius: 8px;
+  z-index: 1001;
 }
 
 .controls-inner {
@@ -547,27 +520,22 @@ body {
   .page-title {
     font-size: 2rem;
   }
-  
+
   .teleprompter-text {
     max-width: 100%;
     font-size: clamp(1rem, 4vw, 1.8rem);
     line-height: 1.5;
     padding: 0 10px;
   }
-  
+
   .teleprompter-text-container {
     padding: 20px 10px;
   }
-  
-  .header-title {
-    font-size: 1rem;
-    padding: 0 10px;
-  }
-  
+
   .document-card {
     flex-direction: column;
   }
-  
+
   .document-actions {
     flex-direction: row;
     justify-content: flex-end;
@@ -575,29 +543,50 @@ body {
     border-left: none;
     border-top: 1px solid var(--border-color);
   }
-  
+
+  /* Reposition floating controls for mobile */
   .floating-controls {
     width: calc(100% - 20px);
     bottom: 10px;
     left: 10px;
+    right: 10px;
+    top: auto;
     transform: none;
+    background-color: rgba(30, 30, 30, 0.8);
+    backdrop-filter: blur(5px);
+    padding: 8px;
   }
   
-  .controls-inner {
+  .floating-controls-left {
+    top: 10px;
+    left: 10px;
+    transform: none;
+    background-color: rgba(30, 30, 30, 0.8);
+    backdrop-filter: blur(5px);
+    padding: 4px;
+  }
+
+  .floating-controls .controls-inner {
+    flex-direction: row;
     justify-content: space-around;
   }
   
+  .floating-controls-left .controls-inner {
+    flex-direction: row;
+    gap: 8px;
+  }
+
   .control-button {
     min-width: 40px;
     height: 40px;
     padding: 8px;
   }
-  
+
   .play-button {
     width: 48px;
     height: 48px;
   }
-  
+
   .speed-indicator {
     font-size: 0.8rem;
     min-width: 50px;
@@ -611,16 +600,16 @@ body {
   .teleprompter-text {
     font-size: clamp(0.9rem, 4.5vw, 1.6rem);
   }
-  
+
   .teleprompter-text-container {
     padding: 15px 8px;
   }
-  
+
   .floating-controls {
     padding: 8px 12px;
   }
   
-  .controls-inner {
+  .floating-controls .controls-inner {
     gap: 8px;
   }
 }
