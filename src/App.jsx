@@ -21,7 +21,34 @@ const TeleprompterApp = () => {
   const intervalRef = useRef(null);
   const scrollRef = useRef(null);
 
-  const words = currentDoc ? currentDoc.content.split(/\s+/).filter(word => word.length > 0) : [];
+  // Updated text processing to preserve line breaks
+  const processText = (text) => {
+    if (!text) return [];
+    
+    // Split by lines first, then process each line
+    const lines = text.split(/\r?\n/);
+    const elements = [];
+    
+    lines.forEach((line, lineIndex) => {
+      if (line.trim()) {
+        // Split line into words
+        const words = line.split(/\s+/).filter(word => word.length > 0);
+        words.forEach(word => {
+          elements.push({ type: 'word', content: word });
+        });
+      }
+      
+      // Add line break after each line (except the last one)
+      if (lineIndex < lines.length - 1) {
+        elements.push({ type: 'linebreak' });
+      }
+    });
+    
+    return elements;
+  };
+
+  const textElements = currentDoc ? processText(currentDoc.content) : [];
+  const words = textElements.filter(el => el.type === 'word');
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -67,7 +94,7 @@ const TeleprompterApp = () => {
       if (currentWordElement) {
         currentWordElement.scrollIntoView({
           behavior: 'smooth',
-          block: 'center'
+          block: 'start'
         });
       }
     }
@@ -186,21 +213,32 @@ const TeleprompterApp = () => {
     setNewDocContent('');
   };
 
-  const renderWords = () => {
-    return words.map((word, index) => (
-      <span
-        key={index}
-        className={`teleprompter-word ${
-          index === currentWordIndex
-            ? 'current-word'
-            : index < currentWordIndex
-            ? 'past-word'
-            : 'future-word'
-        }`}
-      >
-        {word}
-      </span>
-    ));
+  // Updated render function to handle line breaks
+  const renderTextElements = () => {
+    let wordIndex = 0;
+    
+    return textElements.map((element, index) => {
+      if (element.type === 'linebreak') {
+        return <br key={index} />;
+      } else if (element.type === 'word') {
+        const currentElement = (
+          <span
+            key={index}
+            className={`teleprompter-word ${
+              wordIndex === currentWordIndex
+                ? 'current-word'
+                : wordIndex < currentWordIndex
+                ? 'past-word'
+                : 'future-word'
+            }`}
+          >
+            {element.content}
+          </span>
+        );
+        wordIndex++;
+        return currentElement;
+      }
+    });
   };
 
   if (isLoading && showDocList) { // Initial loading screen for document list
@@ -367,7 +405,7 @@ const TeleprompterApp = () => {
       {/* Text Display */}
       <div ref={scrollRef} className="teleprompter-text-container">
         <div className="teleprompter-text">
-          {words.length > 0 ? renderWords() : <p className="empty-document">This document is empty.</p>}
+          {textElements.length > 0 ? renderTextElements() : <p className="empty-document">This document is empty.</p>}
         </div>
       </div>
 
