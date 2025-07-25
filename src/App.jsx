@@ -411,8 +411,9 @@ const TeleprompterApp = () => {
       </div>
 
       {/* Progress Bar */}
-      {words.length > 0 && (
+      {/* {words.length > 0 && (
         <div className="progress-container">
+          
           <div className="progress-info">
             <span>{Math.min(currentWordIndex + 1, words.length)}</span>
             <div className="progress-bar-container">
@@ -424,56 +425,34 @@ const TeleprompterApp = () => {
             <span>{words.length}</span>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* --- Floating UI Elements --- */}
 
       {/* Left Controls (Back/Settings) */}
-      <div className="floating-controls-left">
-        <div className="controls-inner">
+        <div className="bottom-controls-bar">
+         <button
+            onClick={rewind}
+            disabled={words.length === 0}
+            className="control-button rewind-button"
+          >
+            <FastForward size={24} className="rotate-180" />
+          </button>
           <button
             onClick={() => { setCurrentDoc(null); setIsPlaying(false); setShowDocList(true); }}
-            className="control-button"
+            className="control-button rewind-button"
             aria-label="Back to Documents"
           >
             <ArrowLeft size={22} />
           </button>
-          <button
-            onClick={() => setShowSettings(true)}
-            className="control-button"
-            aria-label="Open Settings"
-          >
-            <Settings size={22} />
-          </button>
-           <button
-            onClick={() => setMirror(!mirror)}
-            className="control-button"
-            aria-label="Toggle Mirror"
-          >
-            {mirror ? 'Mirror: On' : 'Mirror: Off'}
-          </button>
 
 
-        </div>
-      </div>
-
-      {/* Right Controls (Playback) */}
-      <div className="floating-controls">
-        <div className="controls-inner">
           <button
             onClick={reset}
             disabled={words.length === 0}
             className="control-button reset-button"
           >
             <RotateCcw size={20} />
-          </button>
-
-          <button
-            onClick={rewind}
-            disabled={words.length === 0}
-            className="control-button rewind-button"
-          >
-            <FastForward size={20} className="rotate-180" />
           </button>
 
           <button
@@ -484,20 +463,23 @@ const TeleprompterApp = () => {
             {isPlaying ? <Pause size={24} /> : <Play size={24} />}
           </button>
 
+           <button
+            onClick={() => setMirror(!mirror)}
+            className="control-button"
+            aria-label="Toggle Mirror"
+          >
+            {mirror ? 'Mirror: On' : 'Mirror: Off'}
+          </button>
           <button
-            onClick={fastForward}
+          onClick={fastForward}
             disabled={words.length === 0}
             className="control-button forward-button"
           >
             <FastForward size={20} />
           </button>
-
-          <div className="speed-indicator">
-            {speed} WPM
-          </div>
         </div>
+
       </div>
-    </div>
   );
 };
 
