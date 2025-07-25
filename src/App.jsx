@@ -17,6 +17,7 @@ const TeleprompterApp = () => {
   const [newDocTitle, setNewDocTitle] = useState('');
   const [newDocContent, setNewDocContent] = useState('');
   const [isLoading, setIsLoading] = useState(true); // For loading documents
+  const [mirror, setMirror] = useState(false); // For mirroring the text
 
   const intervalRef = useRef(null);
   const scrollRef = useRef(null);
@@ -404,7 +405,7 @@ const TeleprompterApp = () => {
     <div className="teleprompter-view">
       {/* Text Display */}
       <div ref={scrollRef} className="teleprompter-text-container">
-        <div className="teleprompter-text">
+        <div className={`teleprompter-text ${mirror ? 'mirrored' : ''}`}>
           {textElements.length > 0 ? renderTextElements() : <p className="empty-document">This document is empty.</p>}
         </div>
       </div>
@@ -444,6 +445,15 @@ const TeleprompterApp = () => {
           >
             <Settings size={22} />
           </button>
+           <button
+            onClick={() => setMirror(!mirror)}
+            className="control-button"
+            aria-label="Toggle Mirror"
+          >
+            {mirror ? 'Mirror: On' : 'Mirror: Off'}
+          </button>
+
+
         </div>
       </div>
 

@@ -613,3 +613,8 @@ body {
     gap: 8px;
   }
 }
+
+/* --- Mirror Feature --- */
+.mirrored {
+  transform: scaleX(-1);
+}
